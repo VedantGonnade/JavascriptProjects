@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "minimum_chrome_version": "93",
+  "name": "My Code Chef Extension",
+  "version": "1",
+  "description": "This extension will show code chef result in borwser",
+  "action": {
+    "default_icon": {
+      "16": "images/icons.png",
+      "24": "images/icons.png",
+      "32": "images/icons.png"
+    },
+    "default_title": "CodeChef extension"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "alarms",
+    "webRequest",
+    "tabs",
+    "storage",
+    "webNavigation",
+    "activeTab",
+    "scripting",
+    "notifications"
+  ],
+
+  "host_permissions": ["https://*.codechef.com/*"]
+}
