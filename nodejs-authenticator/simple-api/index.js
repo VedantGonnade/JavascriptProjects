@@ -13,7 +13,7 @@ let loginData = {};
 
 app.post('/login', (req, res) => {
 
-    const secretKeyForJWT = "FDaFdsFDafsFdasfFDSAsd";
+    const secretKeyForJWT = process.env.PRIVATE_KEY
     const payload = {
         username: req.body.username
     }
