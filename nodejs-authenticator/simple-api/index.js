@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import express from 'express';
+import jwt from 'jsonwebtoken'
 
 const app = express();
 
@@ -8,6 +9,37 @@ const usersData = [];
 
 // express middleware to use json.
 app.use(express.json());
+let loginData = {};
+
+app.post('/login', (req, res) => {
+
+    const secretKeyForJWT = "FDaFdsFDafsFdasfFDSAsd";
+    const payload = {
+        username: req.body.username
+    }
+    // Schema building for input validation
+    const schema = Joi.object({
+        username: Joi.string().required(),
+        password: Joi.string().required()
+    });
+
+    // input is getting validated
+    const result = schema.validate({
+        username: req.body.username,
+        password: req.body.password
+    })
+
+    if (result.error) {
+        res.status(400).send("Bad Request");
+        return;
+    } else {
+        // creating a JWT token
+        const token = jwt.sign(payload, secretKeyForJWT, {expiresIn: '3600s'});
+        const Z = res.set('auth_token', `Bearer ${token}`);
+        res.status(200).send({message: "Sucessfully logged In"})
+        return;
+    }
+});
 
 // route to register a new user.
 app.post("/register", (req, res) => {
@@ -88,19 +120,19 @@ app.get('/listUsers', (req, res) => {
 // route to update the user information.
 app.put('/updateUser', (req, res) => {
 
+    const {authorization} = req.headers;
+    const loginData = authorization.split(' ')[1].split('.')[1];  
+    // extracting data from JWT
+    const data = JSON.parse(Buffer.from(loginData, 'base64').toString());
     // schema for input validation
     const schema = Joi.object({
-        username: Joi.string().required(),
-        password: Joi.string().required().min(5).max(20),
-        name: Joi.string().required().min(3).max(10),
+        name: Joi.string().min(3).max(10),
         college: Joi.string(),
         year_of_graduation: Joi.number()
     });
 
     // input is getting validated with respect to the schema.
     const result = schema.validate({
-        username: req.body.username,
-        password: req.body.password,
         name : req.body.name,
         college: req.body.college, 
         year_of_graduation: req.body.year_of_graduation
@@ -118,7 +150,7 @@ app.put('/updateUser', (req, res) => {
     // if a valid request is received and userData length is greater than 0, user will be updated based on the input.
     if (validRequest = true && usersData.length > 0) {
         for (const user of usersData) {
-            if (user.username === req.body.username && user.password === req.body.password) {
+            if (user.username === data.username) {
                 if (req.body.name) user.name = req.body.name;
                 if (req.body.college) user.college = req.body.college;
                 if (req.body.year_of_graduation) user.year_of_graduation = req.body.year_of_graduation;
